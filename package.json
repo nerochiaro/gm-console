@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/nerochiaro/gm-console/issues"
   },
-  "homepage": "https://github.com/nerochiaro/gm-console#readme"
+  "homepage": "https://github.com/nerochiaro/gm-console#readme",
+  "dependencies": {
+    "mqtt": "^2.14.0"
+  }
 }
