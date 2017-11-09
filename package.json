@@ -1,0 +1,19 @@
+{
+  "name": "gm-console",
+  "version": "1.0.0",
+  "description": "Game Master console for outdoors alternate reality experience",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nerochiaro/gm-console.git"
+  },
+  "author": "Ugo Riboni",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nerochiaro/gm-console/issues"
+  },
+  "homepage": "https://github.com/nerochiaro/gm-console#readme"
+}
