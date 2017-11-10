@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Game Master console</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id='map'></div>
+    <script>
+        // Any points falling out of this area will be discarded as they are
+        // likely bad GPS readings (even though the GPS has a fix)
+        // TODO: allow the GM to customize this
+        var playArea = {
+            center: [41.380772, 2.16809],
+            radius: 30000000 // meters
+        }
+        var track = {
+            points: [], // history of where the player has been before
+            markers: [], // markers at each of the track points
+            line: null, // line joining the track markers
+            markerOptions: { radius: 8, fill: true, color: 'black', fillColor: '#3388ff', fillOpacity: 1.0 },
+            precision: 5, // don't keep an history point if it's less than this distance from the previous one
+        };
+
+        var current = {
+            location: null,
+            marker: null
+        }
+
+        var map = L.map('map');
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+            id: 'mapbox.satellite',
+            accessToken: 'pk.eyJ1IjoibmVyb2NoaWFybyIsImEiOiJjajlzbTdpbWUzajloMndtdjZwNXJ5aHc4In0.xkn1OOeUQuNm8HDSrI6qhg'
+        }).addTo(map);
+        L.control.scale().addTo(map)
+        map.on('load', function() {
+
+            var socket = io();
+            socket.on('connect', function() {
+                console.log('connected');
+            });
+            socket.on('disconnect', function() {
+                console.log('disconnected');
+            });
+            socket.on('location', function(d) {
+                console.log(d)
+                if (!d.fix) return;
+                var p = [d.lat, d.lon];
+                if (map.distance(p, playArea.center) > playArea.radius) return;
+
+                // add the current location to history before changing it
+                if (current.location) track.points.push(current.location);
+                current.location = p;
+
+                // add a marker on the previous place the player was seen, and
+                // if possible a line from there to the new location
+                if (track.points.length > 0) {
+                    var lastTrackPoint = track.points[track.points.length - 1];
+                    if (map.distance(current.location, lastTrackPoint) > track.precision) {
+                        track.markers.push(L.circleMarker(lastTrackPoint, track.markerOptions).addTo(map));
+                    }
+                }
+
+                map.panTo(p); // keep following at the current zoom level
+                if (current.marker) current.marker.setLatLng(current.location);
+                else current.marker = L.marker(current.location).addTo(map);
+
+                if (track.line) track.line.setLatLngs(track.points.concat([current.location]));
+                else track.line = L.polyline(track.points.concat([current.location])).addTo(map);
+            })
+        })
+        map.setView(playArea.center, 19); // this actually loads the map and triggers the laod event
+    </script>
+</body>
+</html>
