@@ -14,6 +14,12 @@ var webserver = app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
 });
 
+var routes = express.Router();
+routes.get('/setloc/:value', function(req, res) {
+    res.status(200).send('DONE');
+});
+app.use('/', routes);
+
 var status = {
     subscribed: false,
     connected: false,
