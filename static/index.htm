@@ -61,7 +61,7 @@
                 console.log(d)
                 if (d == null) return;
 
-                var p = [d.lat, d.lon];
+                var p = [d.lat / 1000000, d.lon / 1000000];
 
                 // filter out points that are too close to each other,
                 // as they create only noise on the map
