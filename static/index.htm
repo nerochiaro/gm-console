@@ -58,12 +58,13 @@
                 document.getElementById('orient').innerHTML = orient;
             });
             socket.on('location', function(d) {
-                console.log(d)
-                if (d == null) return;
-                if (!(d.lat && d.lon)) return;
-                
-                var p = [d.lat / 1000000, d.lon / 1000000];
-                console.log(p)
+                if (d == null || !(d.lat && d.lon)) {
+                    console.log(new Date(), "invalid:", d);
+                    return;
+                } else {
+                    var p = [d.lat / 1000000, d.lon / 1000000];
+                    console.log(new Date(), p)
+                }
 
                 // filter out points that are too close to each other,
                 // as they create only noise on the map
