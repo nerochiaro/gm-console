@@ -60,8 +60,8 @@
             socket.on('location', function(d) {
                 console.log(d)
                 if (d == null) return;
-
                 var p = [d.lat / 1000000, d.lon / 1000000];
+                console.log(p)
 
                 // filter out points that are too close to each other,
                 // as they create only noise on the map
@@ -85,6 +85,7 @@
                 else {
                     current.marker = L.marker(current.location).addTo(map);
                     map.setZoom(21);
+                    map.panTo(p);
                 }
 
                 if (track.line) track.line.setLatLngs(track.points.concat([current.location]));

@@ -8,8 +8,8 @@ var express = require('express'),
 var status = {
     subscribed: false,
     connected: false,
-    lastLocation: null,
-    lastOrientation: false
+    lastLocation: {lat: 0, lon: 0},
+    lastOrientation: { x:0, x:0, x:0}
 }
 
 // ------- Web server
@@ -121,7 +121,7 @@ var mqttClient = null;
 mqttClient = mqtt.connect("mqtt://" + options.host, {username: options.username, password: options.password})
 
 ioserver.on('connect', function(socket) {
-    console.log("websocket: connected");
+    console.log("websocket: connected. status:", status.lastLocation, status.lastOrientation);
     socket.emit('location', status.lastLocation);
     socket.emit('orientation', status.lastOrientation);
     socket.on('play', function() {
