@@ -27,7 +27,7 @@
             points: [], // history of where the player has been before
             markers: [], // markers at each of the track points
             line: null, // line joining the track markers
-            lineOptions: { weight: 8 },
+            lineOptions: { weight: 6 },
             precision: 2, // don't keep an history point if it's less than this distance from the previous one
         };
 
@@ -60,6 +60,8 @@
             socket.on('location', function(d) {
                 console.log(d)
                 if (d == null) return;
+                if (!(d.lat && d.lon)) return;
+                
                 var p = [d.lat / 1000000, d.lon / 1000000];
                 console.log(p)
 
