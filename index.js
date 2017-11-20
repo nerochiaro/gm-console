@@ -123,4 +123,4 @@ ioserver.on('connect', function(socket) {
     })
 })
 
-connectMQTTEvents();
+//connectMQTTEvents();
