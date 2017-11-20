@@ -6,28 +6,29 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
     <style>
-        body { margin:0; padding:0; }
+        body, button { margin:0; padding:0; font: 16px Ubuntu, Helvetica, sans-serif }
         #map { position:absolute; top:0; bottom:0; width:100%; }
+        #orient {
+            position:fixed; top:0; right: 0; border: 1px solid black;
+            background-color: white; z-index: 500; text-align: right; padding: 4px;
+        }
+        #play { position: fixed; top: 26px; right: 0px; z-index: 500; }
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div id='map'></div>
+    <div id='orient'>No orientation received</div>
+    <button id='play'><i class="fa fa-play"></i> Play sound</button>
     <script>
-        // Any points falling out of this area will be discarded as they are
-        // likely bad GPS readings (even though the GPS has a fix)
-        // TODO: allow the GM to customize this
-        var playArea = {
-            center: [41.380772, 2.16809],
-            radius: 30000000 // meters
-        }
         var track = {
             points: [], // history of where the player has been before
             markers: [], // markers at each of the track points
             line: null, // line joining the track markers
-            markerOptions: { radius: 8, fill: true, color: 'black', fillColor: '#3388ff', fillOpacity: 1.0 },
-            precision: 5, // don't keep an history point if it's less than this distance from the previous one
+            lineOptions: { weight: 8 },
+            precision: 10, // don't keep an history point if it's less than this distance from the previous one
         };
 
         var current = {
@@ -50,11 +51,24 @@
             socket.on('disconnect', function() {
                 console.log('disconnected');
             });
+            socket.on('orientation', function(p) {
+                console.log(p);
+                if (p == null) return;
+                var orient = "x: " + p.x + ", y: " + p.y + ", z:" + p.z;
+                document.getElementById('orient').innerHTML = orient;
+            });
             socket.on('location', function(d) {
                 console.log(d)
-                if (!d.fix) return;
+                if (d == null) return;
+
                 var p = [d.lat, d.lon];
-                if (map.distance(p, playArea.center) > playArea.radius) return;
+
+                // filter out points that are too close to each other,
+                // as they create only noise on the map
+                if (track.points.length > 0 &&
+                    map.distance(p, track.points[track.points.length-1]) < track.precision) {
+                    return;
+                }
 
                 // add the current location to history before changing it
                 if (current.location) track.points.push(current.location);
@@ -64,20 +78,26 @@
                 // if possible a line from there to the new location
                 if (track.points.length > 0) {
                     var lastTrackPoint = track.points[track.points.length - 1];
-                    if (map.distance(current.location, lastTrackPoint) > track.precision) {
-                        track.markers.push(L.circleMarker(lastTrackPoint, track.markerOptions).addTo(map));
-                    }
                 }
 
                 map.panTo(p); // keep following at the current zoom level
                 if (current.marker) current.marker.setLatLng(current.location);
-                else current.marker = L.marker(current.location).addTo(map);
+                else {
+                    current.marker = L.marker(current.location).addTo(map);
+                    map.setZoom(21);
+                }
 
                 if (track.line) track.line.setLatLngs(track.points.concat([current.location]));
-                else track.line = L.polyline(track.points.concat([current.location])).addTo(map);
+                else track.line = L.polyline(track.points.concat([current.location]), track.lineOptions).addTo(map);
             })
+
+            document.getElementById('play').addEventListener('click', function() {
+                console.log("triggering playback");
+                socket.emit('play');
+            })
+
         })
-        map.setView(playArea.center, 19); // this actually loads the map and triggers the laod event
+        map.setView([48,1], 2); // this actually loads the map and triggers the laod event
     </script>
 </body>
 </html>

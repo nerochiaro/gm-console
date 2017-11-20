@@ -18,19 +18,9 @@ var status = {
     subscribed: false,
     connected: false,
     lastLocation: null,
-    lastOnline: false
+    lastOrientation: false
 }
 
-// -------- Socket.IO
-
-var ioserver = io(webserver);
-ioserver.on('connect', function(socket) {
-    console.log("websocket: connected");
-    socket.emit('location', status.lastLocation);
-    socket.emit('online', status.lastOnline);
-})
-
-// -------- MQTT
 
 var options = {
     host: "io.adafruit.com",
@@ -38,60 +28,42 @@ var options = {
     username: "nerochiaro",
     password: "13146cce703f4c1a83b7d2467bcbc9fd"
 }
-var locationTopic = options.username + "/feeds/location";
-var onlineTopic = options.username + "/feeds/online";
+var locationTopic = options.username + "/feeds/lc";
+var orientationTopic = options.username + "/feeds/or";
+var soundTopic = options.username + "/feeds/sn";
 
 function parseLocation(message) {
-    var location = { fix: false, lat: 0.0, lon: 0.0, ele: 0.0 }
+    var location = { lat: 0.0, lon: 0.0, ele: 0.0 }
     var parts = message.split(",");
-    if (parts.length == 4) {
-        location.fix = (parseInt(parts[0]) == 1);
-        location.lat = (parseFloat(parts[1]));
-        location.lon = (parseFloat(parts[2]));
-        location.ele = (parseFloat(parts[3]));
+    if (parts.length == 2) {
+        location.lat = (parseInt(parts[0]) / 1000000);
+        location.lon = (parseInt(parts[1]) / 1000000);
     }
     return location;
 }
 
-function getLastValue(topic, callback) {
-    request({url: 'https://io.adafruit.com/api/v2/' + onlineTopic, headers: {
-        'X-AIO-Key': options.password
-    }}, function (error, response, body) {
-          if (!error && response && response.statusCode == 200) {
-              var data = JSON.parse(body);
-              callback(data.last_value);
-          } else {
-              console.log("Failed to fetch last value for " + topic);
-              console.log('Error:', error);
-              console.log('StatusCode:', response && response.statusCode);
-              callback(null);
-        }
-    });
-};
+function parseOrientation(message) {
+    var orientation = { x: 0.0, y: 0.0, z: 0.0 };
+    var parts = message.split(",");
+    if (parts.length == 3) {
+        orientation.x = (parseInt(parts[0]) / 10000);
+        orientation.y = (parseInt(parts[1]) / 10000);
+        orientation.z = (parseInt(parts[2]) / 10000);
+    }
+    return orientation;
+}
 
 var debug = {
-    active: true,
+    active: false,
     drift: { lat: 0.0, lon: 0.0 },
     driftDelta: 0.0005
 }
-
-var mqttClient = null;
-getLastValue(locationTopic, function(v) {
-    status.lastLocation = parseLocation(v);
-    ioserver.emit("location", status.lastLocation);
-    getLastValue(onlineTopic, function(v) {
-        status.lastOnline = (v == 1);
-        ioserver.emit("online", status.lastOnline);
-        mqttClient = mqtt.connect("mqtt://" + options.host, {username: options.username, password: options.password})
-        connectMQTTEvents();
-    });
-});
 
 function connectMQTTEvents() {
     mqttClient.on("connect", function () {
         console.log("connected");
         connected = true;
-        mqttClient.subscribe([locationTopic, onlineTopic], function(err, granted) {
+        mqttClient.subscribe([locationTopic, orientationTopic], function(err, granted) {
             console.log("subscribe:", err, granted)
             if (!err) {
                 granted.forEach(function(c) { ioserver.emit("subscribed", c.topic) });
@@ -118,9 +90,27 @@ function connectMQTTEvents() {
             }
             status.lastLocation = loc;
             ioserver.emit("location", loc);
-        } else if (topic == onlineTopic) {
-            status.lastLocation = message.toString();
-            ioserver.emit("online", status.lastLocation);
+        } else if (topic == orientationTopic) {
+            var orient = parseOrientation(message.toString());
+            status.lastOrientation = orient;
+            ioserver.emit("orientation", orient);
         }
     })
 }
+
+
+var mqttClient = null;
+mqttClient = mqtt.connect("mqtt://" + options.host, {username: options.username, password: options.password})
+
+var ioserver = io(webserver);
+ioserver.on('connect', function(socket) {
+    console.log("websocket: connected");
+    socket.emit('location', status.lastLocation);
+    socket.emit('online', status.lastOnline);
+    socket.on('play', function() {
+        console.log("playback requested")
+        mqttClient.publish(soundTopic, "1", { qos: 1 }, function() { console.log("playback delivered") });
+    })
+})
+
+connectMQTTEvents();
