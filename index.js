@@ -5,6 +5,13 @@ var express = require('express'),
     io = require('socket.io'),
     request = require('request');
 
+var status = {
+    subscribed: false,
+    connected: false,
+    lastLocation: null,
+    lastOrientation: false
+}
+
 // ------- Web server
 
 var port = process.env.PORT || 8080;
@@ -13,20 +20,21 @@ app.use(express.static(__dirname + '/static'));
 var webserver = app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
 });
+var ioserver = io(webserver);
 
 var routes = express.Router();
-routes.get('/setloc/:value', function(req, res) {
+routes.get('/set/:values', function(req, res) {
     res.status(200).send('DONE');
+    var v = req.params['values'];
+    if (v) {
+        var p = v.split(","); // x, y, z, lat, lon
+        status.lastOrientation = { x: parseInt(p[0]) || 0, y: parseInt(p[1]) || 0, z: parseInt(p[2]) || 0 };
+        status.lastLocation = { lat: parseInt(p[3]) || 0, lon: parseInt(p[4]) || 0};
+        ioserver.emit('orientation', status.lastOrientation);
+        ioserver.emit('location', status.lastLocation);
+    }
 });
 app.use('/', routes);
-
-var status = {
-    subscribed: false,
-    connected: false,
-    lastLocation: null,
-    lastOrientation: false
-}
-
 
 var options = {
     host: "io.adafruit.com",
@@ -112,11 +120,10 @@ function connectMQTTEvents() {
 var mqttClient = null;
 mqttClient = mqtt.connect("mqtt://" + options.host, {username: options.username, password: options.password})
 
-var ioserver = io(webserver);
 ioserver.on('connect', function(socket) {
     console.log("websocket: connected");
     socket.emit('location', status.lastLocation);
-    socket.emit('online', status.lastOnline);
+    socket.emit('orientation', status.lastOrientation);
     socket.on('play', function() {
         console.log("playback requested")
         mqttClient.publish(soundTopic, "1", { qos: 1 }, function() { console.log("playback delivered") });
