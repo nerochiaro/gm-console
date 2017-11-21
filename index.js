@@ -9,7 +9,7 @@ var status = {
     subscribed: false,
     connected: false,
     lastLocation: {lat: 0, lon: 0},
-    lastOrientation: { x:0, x:0, x:0}
+    lastOrientation: { x:0, y:0, z:0 }
 }
 var deliverPlaybackNotification = false;
 
