@@ -11,6 +11,7 @@ var status = {
     lastLocation: {lat: 0, lon: 0},
     lastOrientation: { x:0, x:0, x:0}
 }
+var deliverPlaybackNotification = true;
 
 // ------- Web server
 
@@ -24,7 +25,8 @@ var ioserver = io(webserver);
 
 var routes = express.Router();
 routes.get('/set/:values', function(req, res) {
-    res.status(200).send('DONE');
+    res.status(200).send(deliverPlaybackNotification ? 'PLAY' : 'DONE');
+    deliverPlaybackNotification = false;
     var v = req.params['values'];
     if (v) {
         var p = v.split(","); // x, y, z, lat, lon
@@ -127,6 +129,7 @@ ioserver.on('connect', function(socket) {
     socket.on('play', function() {
         console.log("playback requested")
         mqttClient.publish(soundTopic, "1", { qos: 1 }, function() { console.log("playback delivered") });
+        deliverPlaybackNotification = true;
     })
 })
 
