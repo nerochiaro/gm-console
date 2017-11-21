@@ -11,7 +11,7 @@ var status = {
     lastLocation: {lat: 0, lon: 0},
     lastOrientation: { x:0, x:0, x:0}
 }
-var deliverPlaybackNotification = true;
+var deliverPlaybackNotification = false;
 
 // ------- Web server
 
