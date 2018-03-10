@@ -1,107 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset='utf-8' />
-    <title>Game Master console</title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-    <style>
-        body, button { margin:0; padding:0; font: 16px Ubuntu, Helvetica, sans-serif }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
-        #orient {
-            position:fixed; top:0; right: 0; border: 1px solid black;
-            background-color: white; z-index: 500; text-align: right; padding: 4px;
-        }
-        #play { position: fixed; top: 26px; right: 0px; z-index: 500; }
-    </style>
-    <script src="/socket.io/socket.io.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+  <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <style>
+      #map { position:absolute; top:80px; bottom:0; width:100%; }
+  </style>
 </head>
 <body>
-    <div id='map'></div>
-    <div id='orient'>No orientation received</div>
-    <button id='play'><i class="fa fa-play" id="playicon"> Sound</button>
-    <script>
-        var track = {
-            points: [], // history of where the player has been before
-            markers: [], // markers at each of the track points
-            line: null, // line joining the track markers
-            lineOptions: { weight: 6 },
-            precision: 2, // don't keep an history point if it's less than this distance from the previous one
-        };
+    <div id="app">
+      <v-app>
+        <v-toolbar app>
+          <v-toolbar-title>Game Master Console</v-toolbar-title>
+        </v-toolbar>
+        <v-navigation-drawer app permanent>
+            <v-card hover class="ml-2 mr-2 mt-2">
+               <v-card-media src="https://vuetifyjs.com/static/doc-images/cards/desert.jpg" height="200px">
+               </v-card-media>
+               <v-card-title primary-title>
+                 <div>
+                   <h3 class="headline mb-0">Player</h3>
+                   <div><strong>Orientation:</strong> x: {{orient.x}}, y: {{orient.y}}, z: {{orient.z}}</div>
+                 </div>
+               </v-card-title>
+               <v-card-actions>
+                 <v-btn color="orange" @click="playAudio()">Play Audio</v-btn>
+               </v-card-actions>
+             </v-card>
+        </v-navigation-drawer>
+        <v-content>
+          <v-container fluid>
+            <div id="map"></div>
+          </v-container>
+        </v-content>
+        <v-footer></v-footer>
+      </v-app>
+    </div>
 
-        var current = {
-            location: null,
-            marker: null
-        }
-
-        var map = L.map('map');
-        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-            id: 'mapbox.satellite',
-            accessToken: 'pk.eyJ1IjoibmVyb2NoaWFybyIsImEiOiJjajlzbTdpbWUzajloMndtdjZwNXJ5aHc4In0.xkn1OOeUQuNm8HDSrI6qhg'
-        }).addTo(map);
-        L.control.scale().addTo(map)
-        map.on('load', function() {
-
-            var socket = io();
-            socket.on('connect', function() {
-                console.log('connected');
-            });
-            socket.on('disconnect', function() {
-                console.log('disconnected');
-            });
-            socket.on('orientation', function(p) {
-                console.log(p);
-                if (p == null) return;
-                var orient = "x: " + p.x + ", y: " + p.y + ", z:" + p.z;
-                document.getElementById('orient').innerHTML = orient;
-            });
-            socket.on('location', function(d) {
-                if (d == null || !(d.lat && d.lon)) {
-                    console.log(new Date(), "invalid:", d);
-                    return;
-                } else {
-                    var p = [d.lat / 1000000, d.lon / 1000000];
-                    console.log(new Date(), p)
-                }
-
-                // filter out points that are too close to each other,
-                // as they create only noise on the map
-                if (track.points.length > 0 &&
-                    map.distance(p, track.points[track.points.length-1]) < track.precision) {
-                    return;
-                }
-
-                // add the current location to history before changing it
-                if (current.location) track.points.push(current.location);
-                current.location = p;
-
-                // add a marker on the previous place the player was seen, and
-                // if possible a line from there to the new location
-                if (track.points.length > 0) {
-                    var lastTrackPoint = track.points[track.points.length - 1];
-                }
-
-                map.panTo(p); // keep following at the current zoom level
-                if (current.marker) current.marker.setLatLng(current.location);
-                else {
-                    current.marker = L.marker(current.location).addTo(map);
-                    map.setZoom(21);
-                    map.panTo(p);
-                }
-
-                if (track.line) track.line.setLatLngs(track.points.concat([current.location]));
-                else track.line = L.polyline(track.points.concat([current.location]), track.lineOptions).addTo(map);
-            })
-
-            document.getElementById('play').addEventListener('click', function() {
-                console.log("triggering playback");
-                socket.emit('play');
-            })
-
-        })
-        map.setView([48,1], 2); // this actually loads the map and triggers the laod event
-    </script>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
+  <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="comms.js"></script>
+  <script>
+    var comms = null;
+    new Vue({
+        el: '#app',
+        data: {
+          map: null,
+          socket: null,
+          orient: {
+              x: 0, y: 0, z: 0
+          },
+          location: {
+              lat: 0.0, lon: 0.0
+          },
+          marker: null,
+          track: {
+              points: [],
+              line: null,
+              lineOptions: { weight: 6 },
+              precision: 2
+          }
+      },
+      mounted: function() {
+          comms = new Comms(this);
+          this.initMap();
+        },
+      methods: {
+          initMap: function() {
+              this.socket = io();
+              this.map = L.map('map');
+              this.tileLayer = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                  id: 'mapbox.satellite',
+                  accessToken: 'pk.eyJ1IjoibmVyb2NoaWFybyIsImEiOiJjajlzbTdpbWUzajloMndtdjZwNXJ5aHc4In0.xkn1OOeUQuNm8HDSrI6qhg'
+              });
+              this.tileLayer.addTo(this.map);
+              this.map.on('load', comms.connect);
+              this.map.setView([41.380772, 2.16809], 12);
+          },
+          playAudio: function() { comms.playAudio() }
+      }
+  });
+  </script>
 </body>
 </html>
