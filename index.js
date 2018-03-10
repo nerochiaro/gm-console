@@ -30,8 +30,8 @@ routes.get('/set/:values', function(req, res) {
     var v = req.params['values'];
     if (v) {
         var p = v.split(","); // x, y, z, lat, lon
-        status.lastOrientation = { x: parseInt(p[0]) || 0, y: parseInt(p[1]) || 0, z: parseInt(p[2]) || 0 };
-        status.lastLocation = { lat: parseInt(p[3]) || 0, lon: parseInt(p[4]) || 0};
+        status.lastOrientation = { x: parseFloat(p[0]) || 0, y: parseFloat(p[1]) || 0, z: parseFloat(p[2]) || 0 };
+        status.lastLocation = { lat: parseFloat(p[3]) || 0, lon: parseFloat(p[4]) || 0};
         ioserver.emit('orientation', status.lastOrientation);
         ioserver.emit('location', status.lastLocation);
     }
