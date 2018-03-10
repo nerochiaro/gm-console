@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
   <style>
       #map { position:absolute; top:80px; bottom:0; width:100%; }
+      canvas { width: 280px; height: 100% }
   </style>
 </head>
 <body>
@@ -17,14 +18,13 @@
         </v-toolbar>
         <v-navigation-drawer app permanent>
             <v-card hover class="ml-2 mr-2 mt-2">
-               <v-card-media src="https://vuetifyjs.com/static/doc-images/cards/desert.jpg" height="200px">
-               </v-card-media>
                <v-card-title primary-title>
                  <div>
                    <h3 class="headline mb-0">Player</h3>
                    <div><strong>Orientation:</strong> x: {{orient.x}}, y: {{orient.y}}, z: {{orient.z}}</div>
                  </div>
                </v-card-title>
+               <canvas id="scene" ref="scene" @wheel="zoomPlayer($event)"></canvas>
                <v-card-actions>
                  <v-btn color="orange" @click="playAudio()">Play Audio</v-btn>
                </v-card-actions>
@@ -42,10 +42,14 @@
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
   <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
   <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
+  <script src="http://mamboleoo.be/learnThree/demos/OBJLoader.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="comms.js"></script>
+  <script src="render.js"></script>
   <script>
     var comms = null;
+    var render = null;
     new Vue({
         el: '#app',
         data: {
@@ -54,6 +58,7 @@
           orient: {
               x: 0, y: 0, z: 0
           },
+          zoom: 1,
           location: {
               lat: 0.0, lon: 0.0
           },
@@ -67,7 +72,9 @@
       },
       mounted: function() {
           comms = new Comms(this);
+          render = new Render(this);
           this.initMap();
+          this.init3D();
         },
       methods: {
           initMap: function() {
@@ -81,7 +88,13 @@
               this.map.on('load', comms.connect);
               this.map.setView([41.380772, 2.16809], 12);
           },
-          playAudio: function() { comms.playAudio() }
+          init3D: function() { render.init(this.$refs.scene, 280, 160); },
+          playAudio: function() { comms.playAudio() },
+          zoomPlayer: function(e) {
+              this.zoom += e.deltaY / 3;
+              if (this.zoom == 0) this.zoom = e.deltaY > 0 ? 1 : -1;
+              render.adjustZoom();
+          }
       }
   });
   </script>
