@@ -98,8 +98,6 @@ function Comms(vue) {
                     this.map.panTo(loc);
                 }
             }
-
-            this.map.panTo(loc); // keep following at the current zoom level
         }.bind(this));
     }.bind(vue);
 
