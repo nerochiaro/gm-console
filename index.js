@@ -7,9 +7,7 @@ var express = require('express'),
 
 var status = {
     subscribed: false,
-    connected: false,
-    lastLocation: {lat: 0, lon: 0},
-    lastOrientation: { x:0, y:0, z:0 }
+    connected: false
 }
 
 // ------- Web server
@@ -23,15 +21,21 @@ var webserver = app.listen(port, function() {
 var ioserver = io(webserver);
 
 var routes = express.Router();
-routes.get('/set/orient/:x,:y,:z', function(req, res) {
+routes.get('/set/:player/orient/:x,:y,:z', function(req, res) {
     res.status(200).send();
-    status.lastOrientation = { x: parseFloat(req.params.x) || 0, y: parseFloat(req.params.y) || 0, z: parseFloat(req.params.z) || 0 };
-    ioserver.emit('orientation', status.lastOrientation);
+    var msg = { player: req.params.player,
+                x: parseFloat(req.params.x) || 0,
+                y: parseFloat(req.params.y) || 0,
+                z: parseFloat(req.params.z) || 0 };
+    ioserver.emit('orientation', msg);
 });
-routes.get('/set/location/:lat,:lon', function(req, res) {
+routes.get('/set/:player/location/:lat,:lon', function(req, res) {
     res.status(200).send();
-    status.lastLocation = { lat: parseFloat(req.params.lat) || 0, lon: parseFloat(req.params.lon) || 0};
-    ioserver.emit('location', status.lastLocation);
+    var msg = { player: req.params.player,
+                lat: parseFloat(req.params.lat) || 0,
+                lon: parseFloat(req.params.lon) || 0
+              }
+    ioserver.emit('location', msg);
 });
 app.use('/', routes);
 
@@ -120,12 +124,10 @@ var mqttClient = null;
 mqttClient = mqtt.connect("mqtt://" + options.host, {username: options.username, password: options.password})
 
 ioserver.on('connect', function(socket) {
-    console.log("websocket: connected. status:", status.lastLocation, status.lastOrientation);
-    socket.emit('location', status.lastLocation);
-    socket.emit('orientation', status.lastOrientation);
+    console.log("websocket: connected.");
     socket.on('play', function() {
         console.log("playback requested")
-        mqttClient.publish(soundTopic, "1", { qos: 1 }, function() { console.log("playback delivered") });
+        //mqttClient.publish(soundTopic, "1", { qos: 1 }, function() { console.log("playback delivered") });
         deliverPlaybackNotification = true;
     })
 })
