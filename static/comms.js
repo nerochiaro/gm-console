@@ -92,11 +92,14 @@ function Comms(vue) {
                     fill: true, fillOpacity: 1.0,
                     fillColor: p.color.darken().name()
                 }).addTo(this.map);
-                this.map.setZoom(21);
-                this.map.panTo(loc);
+
+                if (needPan) {
+                    this.map.setZoom(21);
+                    this.map.panTo(loc);
+                }
             }
 
-            if (needPan) this.map.panTo(loc); // keep following at the current zoom level
+            this.map.panTo(loc); // keep following at the current zoom level
         }.bind(this));
     }.bind(vue);
 
