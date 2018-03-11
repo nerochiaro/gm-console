@@ -15,7 +15,7 @@ function Render(vue) {
       scene.add(camera);
       player.render.camera = camera;
 
-      var pointLight = new THREE.PointLight(0xffffff);
+      var pointLight = new THREE.PointLight(player.color.hex());
       pointLight.position.set(0, 300, 200);
       scene.add(pointLight);
 
