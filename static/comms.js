@@ -11,9 +11,13 @@ var Player = function(name) {
     this.track = {
         points: [],
         line: null,
-        lineOptions: { weight: 6 },
         precision: 2
     }
+
+    // Try to assign the player a color based on the player's name.
+    // If that fails, assign a random color.
+    try { this.color = chroma(name.toLowerCase()) }
+    catch (e) { this.color = chroma.random() }
 }
 
 function Comms(vue) {
@@ -53,6 +57,7 @@ function Comms(vue) {
                 var loc = [d.lat, d.lon];
             }
 
+            var needPan = Object.keys(this.players).length == 0;
             var p = self.getPlayer(d.player);
 
             // filter out points that are too close to each other,
@@ -69,17 +74,26 @@ function Comms(vue) {
             p.location.lat = loc[0];
             p.location.lon = loc[1];
 
-            this.map.panTo(loc); // keep following at the current zoom level
+            // draw a track from the previous point to the current one
+            p.track.points.push(loc);
+            if (p.track.line) p.track.line.setLatLngs(p.track.points);
+            else p.track.line = L.polyline(p.track.points, {
+                weight: 6, color: p.color.name() 
+            }).addTo(this.map);
+
+            // draw a marker at the current point
             if (p.marker) p.marker.setLatLng(loc);
             else {
-                p.marker = L.marker(loc).addTo(this.map);
+                p.marker = L.circleMarker(loc, {
+                    color: p.color.name(),
+                    fill: true, fillOpacity: 1.0,
+                    fillColor: p.color.darken().name()
+                }).addTo(this.map);
                 this.map.setZoom(21);
                 this.map.panTo(loc);
             }
 
-            p.track.points.push(loc);
-            if (p.track.line) p.track.line.setLatLngs(p.track.points);
-            else p.track.line = L.polyline(p.track.points, p.track.lineOptions).addTo(this.map);
+            if (needPan) this.map.panTo(loc); // keep following at the current zoom level
         }.bind(this));
     }.bind(vue);
 
