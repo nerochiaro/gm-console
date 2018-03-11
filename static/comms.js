@@ -31,7 +31,7 @@ function Comms(vue) {
             }
 
             // add the current location to history before changing it
-            if (this.location) this.track.points.push(this.location);
+            if (this.location && (this.location.lat != 0 && this.location.lon != 0)) this.track.points.push(this.location);
             this.location = p;
 
             // add a marker on the previous place the player was seen, and
