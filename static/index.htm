@@ -21,7 +21,7 @@
                <v-card-title primary-title>
                  <div>
                    <h3 class="headline mb-0">Player</h3>
-                   <div><strong>Orientation:</strong> x: {{orient.x}}, y: {{orient.y}}, z: {{orient.z}}</div>
+                   <div><strong>Orientation:</strong> x: {{orient.x.toFixed(3)}}, y: {{orient.y.toFixed(3)}}, z: {{orient.z.toFixed(3)}}</div>
                  </div>
                </v-card-title>
                <canvas id="scene" ref="scene" @wheel="zoomPlayer($event)"></canvas>
