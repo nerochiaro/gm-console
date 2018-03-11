@@ -20,14 +20,11 @@
             <transition-group name="players" tag="div" v-on:after-enter="playerIn">
             <v-card hover class="ml-2 mr-2 mt-2" :data-player="player.name.toLowerCase()"
                     v-for="player in players" v-bind:key="player.name.toLowerCase()">
-               <v-card-title primary-title>
-                 <div>
-                   <h3 class="headline mb-0">Player {{player.name}}</h3>
-                   <div><strong>Orientation:</strong> x: {{player.orient.x.toFixed(3)}},
-                                                      y: {{player.orient.y.toFixed(3)}},
-                                                      z: {{player.orient.z.toFixed(3)}}</div>
-                 </div>
-               </v-card-title>
+                <v-toolbar>
+                  <v-toolbar-title>Player {{player.name}}</v-toolbar-title>
+                  <v-spacer></v-spacer>
+                  <v-btn icon @click="panOn(player)"><v-icon>pin_drop</v-icon></v-btn>
+                </v-toolbar>
                <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
                <v-card-actions>
                  <v-btn color="orange" @click="playAudio(player)">Play Audio</v-btn>
@@ -96,6 +93,10 @@
           playerIn: function(element) {
               console.log("Player joining:", element.dataset.player);
               this.init3D(element.dataset.player);
+          },
+          panOn: function(player) {
+              this.map.setZoom(21);
+              this.map.panTo([player.location.lat, player.location.lon]);
           }
       }
   });
