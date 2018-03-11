@@ -11,7 +11,6 @@ var status = {
     lastLocation: {lat: 0, lon: 0},
     lastOrientation: { x:0, y:0, z:0 }
 }
-var deliverPlaybackNotification = false;
 
 // ------- Web server
 
@@ -24,17 +23,15 @@ var webserver = app.listen(port, function() {
 var ioserver = io(webserver);
 
 var routes = express.Router();
-routes.get('/set/:values', function(req, res) {
-    res.status(200).send(deliverPlaybackNotification ? 'PLAY' : 'DONE');
-    deliverPlaybackNotification = false;
-    var v = req.params['values'];
-    if (v) {
-        var p = v.split(","); // x, y, z, lat, lon
-        status.lastOrientation = { x: parseFloat(p[0]) || 0, y: parseFloat(p[1]) || 0, z: parseFloat(p[2]) || 0 };
-        status.lastLocation = { lat: parseFloat(p[3]) || 0, lon: parseFloat(p[4]) || 0};
-        ioserver.emit('orientation', status.lastOrientation);
-        ioserver.emit('location', status.lastLocation);
-    }
+routes.get('/set/orient/:x,:y,:z', function(req, res) {
+    res.status(200).send();
+    status.lastOrientation = { x: parseFloat(req.params.x) || 0, y: parseFloat(req.params.y) || 0, z: parseFloat(req.params.z) || 0 };
+    ioserver.emit('orientation', status.lastOrientation);
+});
+routes.get('/set/location/:lat,:lon', function(req, res) {
+    res.status(200).send();
+    status.lastLocation = { lat: parseFloat(req.params.lat) || 0, lon: parseFloat(req.params.lon) || 0};
+    ioserver.emit('location', status.lastLocation);
 });
 app.use('/', routes);
 
