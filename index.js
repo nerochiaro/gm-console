@@ -125,8 +125,8 @@ mqttClient = mqtt.connect("mqtt://" + options.host, {username: options.username,
 
 ioserver.on('connect', function(socket) {
     console.log("websocket: connected.");
-    socket.on('play', function() {
-        console.log("playback requested")
+    socket.on('play', function(d) {
+        console.log("Playback requested for player: " + d.player)
         //mqttClient.publish(soundTopic, "1", { qos: 1 }, function() { console.log("playback delivered") });
         deliverPlaybackNotification = true;
     })

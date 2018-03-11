@@ -17,18 +17,23 @@
           <v-toolbar-title>Game Master Console</v-toolbar-title>
         </v-toolbar>
         <v-navigation-drawer app permanent>
-            <v-card hover class="ml-2 mr-2 mt-2">
+            <transition-group name="players" tag="div" v-on:after-enter="playerIn">
+            <v-card hover class="ml-2 mr-2 mt-2" :data-player="player.name.toLowerCase()"
+                    v-for="player in players" v-bind:key="player.name.toLowerCase()">
                <v-card-title primary-title>
                  <div>
-                   <h3 class="headline mb-0">Player</h3>
-                   <div><strong>Orientation:</strong> x: {{orient.x.toFixed(3)}}, y: {{orient.y.toFixed(3)}}, z: {{orient.z.toFixed(3)}}</div>
+                   <h3 class="headline mb-0">Player {{player.name}}</h3>
+                   <div><strong>Orientation:</strong> x: {{player.orient.x.toFixed(3)}},
+                                                      y: {{player.orient.y.toFixed(3)}},
+                                                      z: {{player.orient.z.toFixed(3)}}</div>
                  </div>
                </v-card-title>
-               <canvas id="scene" ref="scene" @wheel="zoomPlayer($event)"></canvas>
+               <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
                <v-card-actions>
-                 <v-btn color="orange" @click="playAudio()">Play Audio</v-btn>
+                 <v-btn color="orange" @click="playAudio(player)">Play Audio</v-btn>
                </v-card-actions>
              </v-card>
+             </transition-group>
         </v-navigation-drawer>
         <v-content>
           <v-container fluid>
@@ -55,26 +60,14 @@
         data: {
           map: null,
           socket: null,
-          orient: {
-              x: 0, y: 0, z: 0
-          },
-          zoom: 1,
-          location: {
-              lat: 0.0, lon: 0.0
-          },
-          marker: null,
-          track: {
-              points: [],
-              line: null,
-              lineOptions: { weight: 6 },
-              precision: 2
+          players: {
+
           }
       },
       mounted: function() {
           comms = new Comms(this);
           render = new Render(this);
           this.initMap();
-          this.init3D();
         },
       methods: {
           initMap: function() {
@@ -88,12 +81,20 @@
               this.map.on('load', comms.connect);
               this.map.setView([41.380772, 2.16809], 12);
           },
-          init3D: function() { render.init(this.$refs.scene, 280, 160); },
-          playAudio: function() { comms.playAudio() },
-          zoomPlayer: function(e) {
-              this.zoom += e.deltaY / 3;
-              if (this.zoom == 0) this.zoom = e.deltaY > 0 ? 1 : -1;
-              render.adjustZoom();
+          init3D: function(playerKey) {
+              // for some reason the reference is returned as an 1-element array
+              var canvas = this.$refs['scene-'+playerKey][0];
+              render.init(canvas, this.players[playerKey], 280, 160);
+          },
+          playAudio: function(player) { comms.playAudio(player) },
+          zoomPlayer: function(e, player) {
+              player.zoom += e.deltaY / 3;
+              if (player.zoom == 0) player.zoom = e.deltaY > 0 ? 1 : -1;
+              render.adjustZoom(player);
+          },
+          playerIn: function(element) {
+              console.log("Player joining:", element.dataset.player);
+              this.init3D(element.dataset.player);
           }
       }
   });

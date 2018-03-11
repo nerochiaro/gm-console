@@ -1,6 +1,7 @@
 function Render(vue) {
     var camera = null;
-    this.init = function(canvas, width, height) {
+    this.init = function(canvas, player, width, height) {
+    console.log(canvas)
       var renderer = new THREE.WebGLRenderer({
         canvas: canvas, antialias: true, alpha: true
       });
@@ -10,7 +11,7 @@ function Render(vue) {
 
       camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 10000);
       camera.position.set(150, 200, 200);
-      camera.zoom = this.zoom;
+      camera.zoom = player.zoom;
       camera.updateProjectionMatrix();
       scene.add(camera);
 
@@ -22,9 +23,9 @@ function Render(vue) {
       var target = null;
       var render = function() {
           requestAnimationFrame(render);
-          target.rotation.x = this.orient.x;
-          target.rotation.y = this.orient.y;
-          target.rotation.z = this.orient.z;
+          target.rotation.x = player.orient.x;
+          target.rotation.y = player.orient.y;
+          target.rotation.z = player.orient.z;
           renderer.render(scene, camera);
       }.bind(this);
 
@@ -47,9 +48,10 @@ function Render(vue) {
       });
   }.bind(vue);
 
-  this.adjustZoom = function() {
-    if (this.zoom < 0) camera.zoom = 1 / (this.zoom * -1);
-    else camera.zoom = this.zoom;
+  this.adjustZoom = function(player) {
+      console.log(player.zoom)
+    if (player.zoom < 0) camera.zoom = 1 / (player.zoom * -1);
+    else camera.zoom = player.zoom;
     camera.updateProjectionMatrix();
   }.bind(vue);
 }
