@@ -27,9 +27,15 @@ routes.get('/set/:player/location/:lat,:lon', function(req, res) {
     res.status(200).send();
     var msg = { player: req.params.player,
                 lat: parseFloat(req.params.lat) || 0,
-                lon: parseFloat(req.params.lon) || 0
-              }
+                lon: parseFloat(req.params.lon) || 0 };
     ioserver.emit('location', msg);
+});
+routes.get('/set/:player/mic/:mic,:interrupt', function(req, res) {
+    res.status(200).send();
+    var msg = { player: req.params.player,
+                mic: parseInt(req.params.mic) || 0,
+                interrupt: req.params.interrupt == "true" };
+    ioserver.emit('mic', msg);
 });
 app.use('/', routes);
 

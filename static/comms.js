@@ -15,6 +15,10 @@ var Player = function(name) {
         points: [],
         line: null,
         precision: 2
+    },
+    this.mic = {
+        value: 0,
+        interrupt: false
     }
 
     // Try to assign the player a color based on the player's name.
@@ -51,6 +55,12 @@ function Comms(vue) {
             p.orient.x = d.x;
             p.orient.y = d.y;
             p.orient.z = d.z;
+        }.bind(this));
+        this.socket.on('mic', function(d) {
+            if (d == null) return;
+            var p = self.getPlayer(d.player);
+            p.mic.value = d.mic;
+            p.mic.interrupt = d.interrupt;
         }.bind(this));
         this.socket.on('location', function(d) {
             if (d == null || !d.player || !(d.lat && d.lon)) {

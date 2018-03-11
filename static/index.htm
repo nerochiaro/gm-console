@@ -27,8 +27,12 @@
                 </v-toolbar>
                <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
                <v-card-actions>
-                 <v-btn color="orange" @click="playAudio(player)">Play Audio</v-btn>
+                   <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>
+                   <v-progress-linear buffer v-model="player.mic.value" :buffer-value="config.mic_threshold / 10"></v-progress-linear>
                </v-card-actions>
+               <!-- <v-card-actions>
+                 <v-btn color="orange" @click="playAudio(player)">Play Audio</v-btn>
+               </v-card-actions> -->
              </v-card>
              </transition-group>
         </v-navigation-drawer>
@@ -58,8 +62,9 @@
         data: {
           map: null,
           socket: null,
-          players: {
-
+          players: {  },
+          config: {
+              mic_threshold: 650
           }
       },
       mounted: function() {
