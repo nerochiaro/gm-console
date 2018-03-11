@@ -89,8 +89,8 @@
           },
           playAudio: function(player) { comms.playAudio(player) },
           zoomPlayer: function(e, player) {
-              player.zoom += e.deltaY / 3;
-              if (player.zoom == 0) player.zoom = e.deltaY > 0 ? 1 : -1;
+              player.render.zoom += e.deltaY / 3;
+              if (player.render.zoom == 0) player.render.zoom = e.deltaY > 0 ? 1 : -1;
               render.adjustZoom(player);
           },
           playerIn: function(element) {

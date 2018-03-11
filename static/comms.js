@@ -3,7 +3,10 @@ var Player = function(name) {
     this.orient = {
         x: 0, y: 0, z: 0
     };
-    this.zoom = 1;
+    this.render = {
+        zoom: 1,
+        camera: null
+    },
     this.location = {
         lat: 0.0, lon: 0.0
     };
