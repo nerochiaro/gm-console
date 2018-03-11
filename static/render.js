@@ -32,15 +32,14 @@ function Render(vue) {
       var loader = new THREE.OBJLoader(manager);
       loader.load('human.obj', function (o) {
           target = o;
-          o.rotation.y = Math.PI * 45 / 180;
           scene.add(o);
-          var box = new THREE.BoxHelper( o, 0xff00 );
           o.children[0].geometry.computeBoundingBox();
           var bbox = o.children[0].geometry.boundingBox;
-          console.log(bbox);
-          scene.add(box);
           camera.lookAt(bbox.center());
-          render(o);
+
+          // var box = new THREE.BoxHelper( o, 0xff00 );
+          // scene.add(box);
+          render();
       }, function (xhr) {
           console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
       }, function ( error ) {
