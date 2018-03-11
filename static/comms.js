@@ -78,7 +78,7 @@ function Comms(vue) {
             p.track.points.push(loc);
             if (p.track.line) p.track.line.setLatLngs(p.track.points);
             else p.track.line = L.polyline(p.track.points, {
-                weight: 6, color: p.color.name() 
+                weight: 6, color: p.color.name()
             }).addTo(this.map);
 
             // draw a marker at the current point
