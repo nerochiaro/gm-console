@@ -42,7 +42,7 @@ app.use('/', routes);
 ioserver.on('connect', function(socket) {
     console.log("websocket: connected.");
     socket.on('play', function(d) {
-        console.log("Playback requested for player: " + d.player)
+        console.log("Playback requested for player: " + d.player + ", file " + d.audio_file)
         deliverPlaybackNotification = true;
     })
 })

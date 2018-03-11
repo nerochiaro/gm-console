@@ -20,6 +20,7 @@ var Player = function(name) {
         value: 0,
         interrupt: false
     }
+    this.audio_file = 0;
 
     // Try to assign the player a color based on the player's name.
     // If that fails, assign a random color.
@@ -112,7 +113,7 @@ function Comms(vue) {
     }.bind(vue);
 
     this.playAudio = function(player) {
-        console.log("Triggering playback for:", player.name);
-        this.socket.emit('play', { player: player.name });
+        console.log("Triggering playback for:", player.name, player.audio_file);
+        this.socket.emit('play', { player: player.name, audio_file: player.audio_file });
     }.bind(vue);
 }

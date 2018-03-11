@@ -25,14 +25,15 @@
                   <v-spacer></v-spacer>
                   <v-btn icon @click="panOn(player)"><v-icon>pin_drop</v-icon></v-btn>
                 </v-toolbar>
-               <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
-               <v-card-actions>
-                   <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>
-                   <v-progress-linear buffer v-model="player.mic.value" :buffer-value="config.mic_threshold / 10"></v-progress-linear>
+                <v-card-actions>
+                    <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>
+                    <v-progress-linear buffer v-model="player.mic.value" :buffer-value="config.mic_threshold / 10"></v-progress-linear>
+                </v-card-actions>
+                <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
+                <v-card-actions>
+                    <v-select :items="config.audio_items" v-model="player.audio_file" label="Choose audio file" single-line></v-select>
+                    <v-btn icon @click="playAudio(player)"><v-icon>play_circle_outline</v-icon></v-btn>
                </v-card-actions>
-               <!-- <v-card-actions>
-                 <v-btn color="orange" @click="playAudio(player)">Play Audio</v-btn>
-               </v-card-actions> -->
              </v-card>
              </transition-group>
         </v-navigation-drawer>
@@ -64,7 +65,12 @@
           socket: null,
           players: {  },
           config: {
-              mic_threshold: 650
+              mic_threshold: 650,
+              audio_items: [
+                  { text: 'Sound One', value: 1 },
+                  { text: 'Sound Two', value: 2 },
+                  { text: 'Sound Three', value: 3 }
+              ]
           }
       },
       mounted: function() {
@@ -100,8 +106,10 @@
               this.init3D(element.dataset.player);
           },
           panOn: function(player) {
-              this.map.setZoom(21);
-              this.map.panTo([player.location.lat, player.location.lon]);
+              if (player.location.lat != 0 && player.location.lon != 0) {
+                  this.map.setZoom(21);
+                  this.map.panTo([player.location.lat, player.location.lon]);
+              }
           }
       }
   });
