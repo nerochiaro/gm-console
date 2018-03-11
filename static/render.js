@@ -49,7 +49,7 @@ function Render(vue) {
   }.bind(vue);
 
   this.adjustZoom = function(player) {
-    if (player.render.zoom < 0) plater.render.camera.zoom = 1 / (player.render.zoom * -1);
+    if (player.render.zoom < 0) player.render.camera.zoom = 1 / (player.render.zoom * -1);
     else player.render.camera.zoom = player.render.zoom;
     player.render.camera.updateProjectionMatrix();
   }.bind(vue);
