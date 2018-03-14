@@ -42,8 +42,14 @@ app.use('/', routes);
 
 ioserver.on('connect', function(socket) {
     console.log("websocket: connected.");
+    socket.on('register_board', function() {
+        socket.join('boards');
+    })
     socket.on('play', function(d) {
+        ioserver.to('boards').emit('play', d)
         console.log("Playback requested for player: " + d.player + ", file " + d.audio_file)
         deliverPlaybackNotification = true;
     })
+    socket.on('mic', function(d) { ioserver.emit('mic', d) })
+    socket.on('orient', function(d) { ioserver.emit('orientation', d) })
 })
