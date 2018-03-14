@@ -18,6 +18,7 @@ var routes = express.Router();
 routes.get('/set/:player/orient/:x,:y,:z', function(req, res) {
     res.status(200).send();
     var msg = { player: req.params.player,
+                quat: false, w: 0.0,
                 x: parseFloat(req.params.x) || 0,
                 y: parseFloat(req.params.y) || 0,
                 z: parseFloat(req.params.z) || 0 };

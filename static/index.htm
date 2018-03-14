@@ -23,6 +23,7 @@
                 <v-toolbar>
                   <v-toolbar-title>Player {{player.name}}</v-toolbar-title>
                   <v-spacer></v-spacer>
+                  <v-btn icon @click="straighten(player)"><v-icon>accessibility</v-icon></v-btn>
                   <v-btn icon @click="panOn(player)"><v-icon>pin_drop</v-icon></v-btn>
                 </v-toolbar>
                 <v-card-actions>
@@ -105,6 +106,7 @@
               console.log("Player joining:", element.dataset.player);
               this.init3D(element.dataset.player);
           },
+          straighten: function(player) { render.straighten(player) },
           panOn: function(player) {
               if (player.location.lat != 0 && player.location.lon != 0) {
                   this.map.setZoom(21);

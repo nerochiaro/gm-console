@@ -1,11 +1,14 @@
 var Player = function(name) {
     this.name = name;
     this.orient = {
-        x: 0, y: 0, z: 0
+        x: 0, y: 0, z: 0, w: 0,
+        quat: false
     };
     this.render = {
         zoom: 1,
-        camera: null
+        camera: null,
+        offset: null,
+        orientation: null
     },
     this.location = {
         lat: 0.0, lon: 0.0
@@ -56,6 +59,9 @@ function Comms(vue) {
             p.orient.x = d.x;
             p.orient.y = d.y;
             p.orient.z = d.z;
+            p.orient.w = d.w;
+            p.orient.quat = d.quat == true;
+            console.log(d);
         }.bind(this));
         this.socket.on('mic', function(d) {
             if (d == null) return;
