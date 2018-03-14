@@ -36,14 +36,8 @@ function Render(vue) {
       var target = null;
       var render = function() {
           requestAnimationFrame(render);
-          if (player.orient.quat) {
-              console.log("quat", player.orient.w, player.orient.x, player.orient.y, player.orient.z)
-              orientation.quaternion.copy(new THREE.Quaternion(player.orient.x, player.orient.y, player.orient.z, player.orient.w));
-          } else {
-              target.rotation.x = player.orient.x;
-              target.rotation.y = player.orient.y;
-              target.rotation.z = player.orient.z;
-          }
+          orientation.quaternion.copy(new THREE.Quaternion(player.orient.x, player.orient.y, player.orient.z, player.orient.w));
+          offset.quaternion.copy(new THREE.Quaternion(player.adjust.x, player.adjust.y, player.adjust.z, player.adjust.w));
           renderer.render(scene, camera);
       }.bind(this);
 
@@ -71,9 +65,4 @@ function Render(vue) {
     else player.render.camera.zoom = player.render.zoom;
     player.render.camera.updateProjectionMatrix();
   }.bind(vue);
-
-  this.straighten = function(player) {
-      var current = new THREE.Quaternion(player.orient.x, player.orient.y, player.orient.z, player.orient.w);
-      player.render.offset.quaternion.copy(current.conjugate());
-  }
 }

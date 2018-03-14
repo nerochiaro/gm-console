@@ -14,7 +14,7 @@
     <div id="app">
       <v-app>
         <v-toolbar app>
-          <v-toolbar-title>Game Master Console</v-toolbar-title>
+          <v-toolbar-title>Game Master Console // Settings</v-toolbar-title>
         </v-toolbar>
         <v-navigation-drawer app permanent>
             <transition-group name="players" tag="div" v-on:after-enter="playerIn">
@@ -23,22 +23,18 @@
                 <v-toolbar>
                   <v-toolbar-title>Player {{player.name}}</v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn icon @click="panOn(player)"><v-icon>pin_drop</v-icon></v-btn>
+                  <v-btn icon @click="calculate_adjust(player)"><v-icon>accessibility</v-icon></v-btn>
                 </v-toolbar>
                 <v-card-actions>
                     <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>
                     <v-progress-linear buffer v-model="player.mic.value" :buffer-value="config.mic_threshold / 10"></v-progress-linear>
                 </v-card-actions>
                 <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
-                <v-card-actions>
-                    <v-btn @click="playAudio(player)"><v-icon left>play_circle_outline</v-icon> Play audio</v-btn>
-               </v-card-actions>
              </v-card>
              </transition-group>
         </v-navigation-drawer>
         <v-content>
           <v-container fluid>
-            <div id="map"></div>
           </v-container>
         </v-content>
         <v-footer></v-footer>
@@ -47,7 +43,6 @@
 
   <script src="https://unpkg.com/vue/dist/vue.js"></script>
   <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
-  <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
   <script src="OBJLoader.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/1.3.6/chroma.min.js"></script>
@@ -60,7 +55,6 @@
     new Vue({
         el: '#app',
         data: {
-          map: null,
           socket: null,
           players: {  },
           config: {
@@ -68,28 +62,18 @@
           }
       },
       mounted: function() {
-          comms = new Comms(this);
           render = new Render(this);
-          this.initMap();
+
+          this.socket = io();
+          comms = new Comms(this);
+          comms.connect();
         },
       methods: {
-          initMap: function() {
-              this.socket = io();
-              this.map = L.map('map');
-              this.tileLayer = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-                  id: 'mapbox.satellite',
-                  accessToken: 'pk.eyJ1IjoibmVyb2NoaWFybyIsImEiOiJjajlzbTdpbWUzajloMndtdjZwNXJ5aHc4In0.xkn1OOeUQuNm8HDSrI6qhg'
-              });
-              this.tileLayer.addTo(this.map);
-              this.map.on('load', comms.connect);
-              this.map.setView([41.380772, 2.16809], 12);
-          },
           init3D: function(playerKey) {
               // for some reason the reference is returned as an 1-element array
               var canvas = this.$refs['scene-'+playerKey][0];
               render.init(canvas, this.players[playerKey], 280, 160);
           },
-          playAudio: function(player) { comms.playAudio(player) },
           zoomPlayer: function(e, player) {
               player.render.zoom += e.deltaY / 3;
               if (player.render.zoom == 0) player.render.zoom = e.deltaY > 0 ? 1 : -1;
@@ -99,12 +83,11 @@
               console.log("Player joining:", element.dataset.player);
               this.init3D(element.dataset.player);
           },
-          panOn: function(player) {
-              if (player.location.lat != 0 && player.location.lon != 0) {
-                  this.map.setZoom(21);
-                  this.map.panTo([player.location.lat, player.location.lon]);
-              }
-          }
+          calculate_adjust: function(player) {
+              var current = new THREE.Quaternion(player.orient.x, player.orient.y, player.orient.z, player.orient.w);
+              var adjust = current.conjugate();
+              comms.send_adjust(player, adjust);
+          },
       }
   });
   </script>

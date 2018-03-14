@@ -40,8 +40,16 @@ routes.get('/set/:player/mic/:mic,:interrupt', function(req, res) {
 });
 app.use('/', routes);
 
+var adjusts = {
+
+};
 ioserver.on('connect', function(socket) {
     console.log("websocket: connected.");
+
+    for (key in adjusts) {
+        socket.emit('adjust', adjusts[key]);
+    }
+
     socket.on('register_board', function() {
         socket.join('boards');
     })
@@ -52,4 +60,8 @@ ioserver.on('connect', function(socket) {
     })
     socket.on('mic', function(d) { ioserver.emit('mic', d) })
     socket.on('orient', function(d) { ioserver.emit('orientation', d) })
+    socket.on('adjust', function(d) {
+        adjusts[d.player.toLowerCase()] = d;
+        ioserver.emit('adjust', d)
+    })
 })

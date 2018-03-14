@@ -1,15 +1,7 @@
 var Player = function(name) {
     this.name = name;
-    this.orient = {
-        x: 0, y: 0, z: 0, w: 0,
-        quat: false
-    };
-    this.render = {
-        zoom: 1,
-        camera: null,
-        offset: null,
-        orientation: null
-    },
+    this.orient = {  x: 0, y: 0, z: 0, w: 0 };
+    this.adjust = {  x: 0, y: 0, z: 0, w: 0 };
     this.location = {
         lat: 0.0, lon: 0.0
     };
@@ -18,12 +10,17 @@ var Player = function(name) {
         points: [],
         line: null,
         precision: 2
-    },
+    };
     this.mic = {
         value: 0,
         interrupt: false
-    }
-    this.audio_file = 0;
+    };
+    this.render = {
+        zoom: 1,
+        camera: null,
+        offset: null,
+        orientation: null
+    };
 
     // Try to assign the player a color based on the player's name.
     // If that fails, assign a random color.
@@ -61,7 +58,6 @@ function Comms(vue) {
             p.orient.z = d.z;
             p.orient.w = d.w;
             p.orient.quat = d.quat == true;
-            console.log(d);
         }.bind(this));
         this.socket.on('mic', function(d) {
             if (d == null) return;
@@ -116,10 +112,18 @@ function Comms(vue) {
                 }
             }
         }.bind(this));
+        this.socket.on('adjust', function(a) {
+            var p = self.getPlayer(a.player);
+            if (p) p.adjust = a.adjust
+        }.bind(this));
     }.bind(vue);
 
     this.playAudio = function(player) {
-        console.log("Triggering playback for:", player.name, player.audio_file);
-        this.socket.emit('play', { player: player.name, audio_file: player.audio_file });
+        console.log("Triggering playback for:", player.name);
+        this.socket.emit('play', { player: player.name });
+    }.bind(vue);
+
+    this.send_adjust = function(player, adjust) {
+        this.socket.emit('adjust', { player: player.name, adjust: { w: adjust.w, x: adjust.x, y: adjust.y, z: adjust.z }});
     }.bind(vue);
 }
