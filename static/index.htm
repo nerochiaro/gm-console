@@ -47,8 +47,8 @@
       </v-app>
     </div>
 
-  <script src="https://unpkg.com/vue/dist/vue.js"></script>
-  <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script>
+  <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/vuetify/dist/vuetify.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>
   <script src="OBJLoader.js"></script>
@@ -93,7 +93,6 @@
           },
           playAudio: function(player) { comms.playAudio(player) },
           playerIn: function(element) {
-              console.log("Player joining:", element.dataset.player);
               this.init3D(element.dataset.player);
           },
           panOn: function(player) {

@@ -52,10 +52,6 @@ function Render(vue) {
           // var box = new THREE.BoxHelper( o, 0xff00 );
           // scene.add(box);
           render();
-      }, function (xhr) {
-          console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-      }, function ( error ) {
-          console.log( 'An error happened' );
       });
   }.bind(vue);
 }

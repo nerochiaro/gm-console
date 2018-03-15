@@ -50,13 +50,6 @@ function Comms(vue) {
     this.connect = function(options) {
         options = options || {};
 
-        this.socket.on('connect', function() {
-            console.log('connected');
-        });
-        this.socket.on('disconnect', function() {
-            console.log('disconnected');
-        });
-
          // we will not receive any events from boards until we register as client
         this.socket.emit('register_client');
 
@@ -115,14 +108,13 @@ function Comms(vue) {
 
             this.socket.on('history', function(h) {
                 var p = self.getPlayer(h.player);
-                console.log(p.track.points.length)
                 if (!p || p.track.points.length >> 0) return; // we already have the history
                 h.history.forEach(function(d) { moveTo(p, d) })
             }.bind(this));
 
             this.socket.on('location', function(d) {
                 if (d == null || !d.player || !(d.lat && d.lon)) {
-                    console.log(new Date(), "invalid:", d);
+                    // invalid point, let's just discard it
                     return;
                 }
 
@@ -148,7 +140,6 @@ function Comms(vue) {
     }.bind(vue);
 
     this.playAudio = function(player) {
-        console.log("Triggering playback for:", player.name);
         this.socket.emit('play', { player: player.name });
     }.bind(vue);
 
