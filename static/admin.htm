@@ -20,9 +20,14 @@
           <v-container fluid>
               <transition-group name="players" tag="div" v-on:after-enter="playerIn">
               <v-card hover class="ml-2 mr-2 mt-2" :data-player="player.name.toLowerCase()"
-                      v-for="player in players" v-bind:key="player.name.toLowerCase()" width="400px">
+                      v-for="player in players" v-bind:key="player.name.toLowerCase()" width="600px">
                   <v-toolbar>
                     <v-toolbar-title>Player {{player.name}}</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-progress-circular :size="40" :width="4" :value="player.calibration.system * 33.333" color="teal" class="mr-2">{{ player.calibration.system }}</v-progress-circular>
+                    <v-progress-circular :size="40" :width="4" :value="player.calibration.gyro * 33.333" color="teal" class="mr-2">{{ player.calibration.gyro }}</v-progress-circular>
+                    <v-progress-circular :size="40" :width="4" :value="player.calibration.accel * 33.333" color="teal" class="mr-2">{{ player.calibration.accel }}</v-progress-circular>
+                    <v-progress-circular :size="40" :width="4" :value="player.calibration.mag * 33.333" color="teal" class="mr-2">{{ player.calibration.mag }}</v-progress-circular>
                   </v-toolbar>
                   <v-card-actions>
                       <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>

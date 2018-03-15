@@ -86,6 +86,8 @@ ioserver.on('connect', function(socket) {
     socket.on('orient', function(d) {
         ioserver.to('clients').emit('orientation', d)
     })
+    socket.on('calibration', function(d) {
+        ioserver.to('clients').emit('calibration', d)
     })
     socket.on('adjust', function(d) {
         var p = getPlayer(d.player);

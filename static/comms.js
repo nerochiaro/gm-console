@@ -15,14 +15,19 @@ var Player = function(name) {
         value: 0,
         interrupt: false
     };
-    this.interrupts = [{done: false}, {done: false}],
+    this.interrupts = [{done: false}, {done: false}];
+    this.calibration = {
+        system: 0,
+        gyro: 0,
+        accel: 0,
+        mag: 0
+    };
     this.render = {
         zoom: 1,
         camera: null,
         offset: null,
         orientation: null
     };
-
     // Try to assign the player a color based on the player's name.
     // If that fails, assign a random color.
     try { this.color = chroma(name.toLowerCase()) }
@@ -128,6 +133,16 @@ function Comms(vue) {
             var p = self.getPlayer(a.player);
             if (p) p.adjust = a.adjust
         }.bind(this));
+
+        this.socket.on('calibration', function(c) {
+            var p = self.getPlayer(c.player);
+            if (p) {
+                p.calibration.system = c.system;
+                p.calibration.gyro = c.gyro;
+                p.calibration.accel = c.accel;
+                p.calibration.mag = c.mag;
+            }
+        }.bind(this));;
     }.bind(vue);
 
     this.playAudio = function(player) {
