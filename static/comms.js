@@ -23,8 +23,6 @@ var Player = function(name) {
         mag: 0
     };
     this.render = {
-        zoom: 1,
-        camera: null,
         offset: null,
         orientation: null
     };

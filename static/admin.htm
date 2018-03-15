@@ -20,7 +20,7 @@
           <v-container fluid>
               <transition-group name="players" tag="div" v-on:after-enter="playerIn">
               <v-card hover class="ml-2 mr-2 mt-2" :data-player="player.name.toLowerCase()"
-                      v-for="player in players" v-bind:key="player.name.toLowerCase()" width="600px">
+                      v-for="player in players" v-bind:key="player.name.toLowerCase()" width="460px">
                   <v-toolbar>
                     <v-toolbar-title>Player {{player.name}}</v-toolbar-title>
                     <v-spacer></v-spacer>
@@ -35,7 +35,7 @@
                       <v-checkbox disabled color="red" class="mt-4"
                                   v-for="interrupt in player.interrupts" v-model="interrupt.done"></v-checkbox>
                   </v-card-actions>
-                  <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
+                  <canvas :ref="'scene-'+player.name.toLowerCase()"></canvas>
                   <v-card-actions>
                       <v-btn @click="clear_interrupts(player)"><v-icon>volume_off</v-icon> Clear micrphone events</v-btn>
                       <v-btn @click="calculate_adjust(player)"><v-icon>accessibility</v-icon> Align model</v-btn>

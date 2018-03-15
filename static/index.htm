@@ -31,7 +31,7 @@
                     <v-checkbox disabled color="red" class="mt-4"
                                 v-for="interrupt in player.interrupts" v-model="interrupt.done"></v-checkbox>
                 </v-card-actions>
-                <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
+                <canvas :ref="'scene-'+player.name.toLowerCase()"></canvas>
                 <v-card-actions>
                     <v-btn @click="playAudio(player)"><v-icon left>play_circle_outline</v-icon> Play audio</v-btn>
                </v-card-actions>
@@ -92,11 +92,6 @@
               render.init(canvas, this.players[playerKey], 280, 160);
           },
           playAudio: function(player) { comms.playAudio(player) },
-          zoomPlayer: function(e, player) {
-              player.render.zoom += e.deltaY / 3;
-              if (player.render.zoom == 0) player.render.zoom = e.deltaY > 0 ? 1 : -1;
-              render.adjustZoom(player);
-          },
           playerIn: function(element) {
               console.log("Player joining:", element.dataset.player);
               this.init3D(element.dataset.player);

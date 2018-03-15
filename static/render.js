@@ -10,7 +10,6 @@ function Render(vue) {
 
       var camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 10000);
       camera.position.set(150, 200, 200);
-      camera.zoom = player.render.zoom;
       camera.updateProjectionMatrix();
       scene.add(camera);
       player.render.camera = camera;
@@ -58,11 +57,5 @@ function Render(vue) {
       }, function ( error ) {
           console.log( 'An error happened' );
       });
-  }.bind(vue);
-
-  this.adjustZoom = function(player) {
-    if (player.render.zoom < 0) player.render.camera.zoom = 1 / (player.render.zoom * -1);
-    else player.render.camera.zoom = player.render.zoom;
-    player.render.camera.updateProjectionMatrix();
   }.bind(vue);
 }
