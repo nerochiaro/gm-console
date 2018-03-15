@@ -40,20 +40,27 @@ routes.get('/set/:player/mic/:mic,:interrupt', function(req, res) {
 });
 app.use('/', routes);
 
-var adjusts = {
+var Player = function(name) {
+    this.name = name;
+    this.adjust = { x: 0, y: 0, z: 0, w: 0 },
+    // user array of objects to make binding things easier in Vue on the client side
+    this.interrupts = [{done: false}, {done: false}]
+}
+var players = {};
 
-};
-var interrupts = {
+function getPlayer(name) {
+    var key = name.toLowerCase();
+    if (!players[key]) players[key] = new Player(name);
+    return players[key];
+}
 
-};
 ioserver.on('connect', function(socket) {
     console.log("websocket: connected.");
 
-    for (key in adjusts) {
-        socket.emit('adjust', adjusts[key]);
-    }
-    for (key in adjusts) {
-        socket.emit('adjust', adjusts[key]);
+    for (key in players) {
+        var p = players[key];
+        socket.emit('adjust', { player: p.name, adjust: p.adjust });
+        socket.emit('mic', { player: p.name, done: p.interrupts });
     }
 
     socket.on('register_board', function() {
@@ -65,29 +72,29 @@ ioserver.on('connect', function(socket) {
         deliverPlaybackNotification = true;
     })
     socket.on('mic', function(d) {
-        // user array of objects to make binding things easier in Vue on the client side
-        if (!interrupts[d.player.toLowerCase()]) {
-            interrupts[d.player.toLowerCase()] = { player: d.player, done: [{done: false}, {done: false}] };
+        var p = getPlayer(d.player);
+        if (!p) return;
+        if (d.interrupt) {
+            if (p.interrupts[0].done == false) p.interrupts[0].done = true;
+            else if (p.interrupts[1].done == false) p.interrupts[1].done = true;
         }
-        var ints = interrupts[d.player.toLowerCase()];
-
-        if (ints && d.interrupt) {
-            if (ints.done[0].done == false) ints.done[0].done = true;
-            else if (ints.done[1].done == false) ints.done[1].done = true;
-        }
-        d.done = ints.done;
+        d.done = p.interrupts;
         ioserver.emit('mic', d)
     })
     socket.on('orient', function(d) { ioserver.emit('orientation', d) })
     socket.on('adjust', function(d) {
-        adjusts[d.player.toLowerCase()] = d;
-        ioserver.emit('adjust', d)
+        var p = getPlayer(d.player);
+        if (!p) return;
+
+        p.adjust = d.adjust;
+        ioserver.emit('adjust', {player: d.player, adjust: p.adjust})
     })
     socket.on('clear_interrupts', function(d) {
-        var ints = interrupts[d.player.toLowerCase()];
-        ints.player = d.player;
-        ints.done = [{done: false}, {done: false}];
-        ioserver.emit('mic', ints);
-    })
+        var p = getPlayer(d.player);
+        if (!p) return;
 
+        p.interrupts[0].done = false;
+        p.interrupts[1].done = false;
+        ioserver.emit('mic', {player: d.player, done: p.interrupts});
+    })
 })
