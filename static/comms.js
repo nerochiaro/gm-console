@@ -78,16 +78,8 @@ function Comms(vue) {
         }.bind(this));
 
         if (options.no_map != true) {
-            this.socket.on('location', function(d) {
-                if (d == null || !d.player || !(d.lat && d.lon)) {
-                    console.log(new Date(), "invalid:", d);
-                    return;
-                } else {
-                    var loc = [d.lat, d.lon];
-                }
-
-                var needPan = Object.keys(this.players).length == 0;
-                var p = self.getPlayer(d.player);
+            var moveTo = function(p, d) {
+                var loc = [d.lat, d.lon];
 
                 // filter out points that are too close to each other,
                 // as they create only noise on the map
@@ -118,12 +110,24 @@ function Comms(vue) {
                         fill: true, fillOpacity: 1.0,
                         fillColor: p.color.darken().name()
                     }).addTo(this.map);
-
-                    if (needPan) {
-                        this.map.setZoom(21);
-                        this.map.panTo(loc);
-                    }
                 }
+            }.bind(this);
+
+            this.socket.on('history', function(h) {
+                var p = self.getPlayer(h.player);
+                console.log(p.track.points.length)
+                if (!p || p.track.points.length >> 0) return; // we already have the history
+                h.history.forEach(function(d) { moveTo(p, d) })
+            }.bind(this));
+
+            this.socket.on('location', function(d) {
+                if (d == null || !d.player || !(d.lat && d.lon)) {
+                    console.log(new Date(), "invalid:", d);
+                    return;
+                }
+
+                var p = self.getPlayer(d.player);
+                moveTo(p, d);
             }.bind(this));
         }
 
@@ -140,7 +144,7 @@ function Comms(vue) {
                 p.calibration.accel = c.accel;
                 p.calibration.mag = c.mag;
             }
-        }.bind(this));;
+        }.bind(this));
     }.bind(vue);
 
     this.playAudio = function(player) {

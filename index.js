@@ -34,15 +34,18 @@ var tracks = {};
     });
 });
 
-function emitPlayers(list) {
+function emitPlayers(list, target) {
+    // if no target is specified, broadcast to the entire clients group
+    if (!(target)) target = ioserver.to('clients');
+
     list.forEach(function(p) {
-        ioserver.to('clients').emit('adjust', { player: p.name, adjust: p.adjust });
-        ioserver.to('clients').emit('mic', { player: p.name, done: p.interrupts });
-        if (p.track) {
-            p.track.forEach(function(point) {
-                ioserver.to('clients').emit('location', { player: p.name, lat: point.lat, lon: point.lon });
-            });
-        }
+        target.emit('adjust', { player: p.name, adjust: p.adjust });
+        target.emit('mic', { player: p.name, done: p.interrupts });
+        if (p.track) target.emit('history', {
+            player: p.name, history: p.track.map(function (point) {
+                return { lat: point.lat, lon: point.lon }
+            })
+        });
     })
 }
 
@@ -55,17 +58,26 @@ ioserver.on('connect', function(socket) {
             return;
         }
         socket.join('boards');
+        console.log("registering as board:", d.player)
 
+        socket.on('disconnect', function() {
+            console.log("board leaves:", d.player)
+            ioserver.to('clients').emit('leaving', { player: d.player });
+        })
+
+        // if this player had previously connected, keep its adjust and interrupts settings
         var key = d.player.toLowerCase();
-        players[key] = new Player(d.player);
+        if (players[key] === undefined) players[key] = new Player(d.player);
+
         // if there is a pre-recorded track for this player, assign it
         if (tracks[key]) players[key].track = tracks[key];
-        emitPlayers([players[key]]);
+        emitPlayers([players[key]]); // emit to all clients all available data for the player that just joined
     });
 
     socket.on('register_client', function() {
         socket.join('clients');
-        emitPlayers(Object.keys(players).map(function(key) { return players[key] }));
+        // emit all available data about all players currently in the system, only to this client
+        emitPlayers(Object.keys(players).map(function(key) { return players[key] }), socket);
     });
 
     socket.on('play', function(d) {
