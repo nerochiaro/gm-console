@@ -28,6 +28,8 @@
                 <v-card-actions>
                     <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>
                     <v-progress-linear buffer v-model="player.mic.value" :buffer-value="config.mic_threshold / 10"></v-progress-linear>
+                    <v-checkbox disabled color="red" class="mt-4"
+                                v-for="interrupt in player.interrupts" v-model="interrupt.done"></v-checkbox>
                 </v-card-actions>
                 <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
                 <v-card-actions>

@@ -43,9 +43,15 @@ app.use('/', routes);
 var adjusts = {
 
 };
+var interrupts = {
+
+};
 ioserver.on('connect', function(socket) {
     console.log("websocket: connected.");
 
+    for (key in adjusts) {
+        socket.emit('adjust', adjusts[key]);
+    }
     for (key in adjusts) {
         socket.emit('adjust', adjusts[key]);
     }
@@ -58,10 +64,30 @@ ioserver.on('connect', function(socket) {
         console.log("Playback requested for player: " + d.player + ", file " + d.audio_file)
         deliverPlaybackNotification = true;
     })
-    socket.on('mic', function(d) { ioserver.emit('mic', d) })
+    socket.on('mic', function(d) {
+        // user array of objects to make binding things easier in Vue on the client side
+        if (!interrupts[d.player.toLowerCase()]) {
+            interrupts[d.player.toLowerCase()] = { player: d.player, done: [{done: false}, {done: false}] };
+        }
+        var ints = interrupts[d.player.toLowerCase()];
+
+        if (ints && d.interrupt) {
+            if (ints.done[0].done == false) ints.done[0].done = true;
+            else if (ints.done[1].done == false) ints.done[1].done = true;
+        }
+        d.done = ints.done;
+        ioserver.emit('mic', d)
+    })
     socket.on('orient', function(d) { ioserver.emit('orientation', d) })
     socket.on('adjust', function(d) {
         adjusts[d.player.toLowerCase()] = d;
         ioserver.emit('adjust', d)
     })
+    socket.on('clear_interrupts', function(d) {
+        var ints = interrupts[d.player.toLowerCase()];
+        ints.player = d.player;
+        ints.done = [{done: false}, {done: false}];
+        ioserver.emit('mic', ints);
+    })
+
 })

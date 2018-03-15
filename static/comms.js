@@ -15,6 +15,7 @@ var Player = function(name) {
         value: 0,
         interrupt: false
     };
+    this.interrupts = [{done: false}, {done: false}],
     this.render = {
         zoom: 1,
         camera: null,
@@ -64,6 +65,7 @@ function Comms(vue) {
             var p = self.getPlayer(d.player);
             p.mic.value = d.mic;
             p.mic.interrupt = d.interrupt;
+            if (d.done) Vue.set(p, "interrupts", d.done);
         }.bind(this));
         this.socket.on('location', function(d) {
             if (d == null || !d.player || !(d.lat && d.lon)) {
@@ -125,5 +127,9 @@ function Comms(vue) {
 
     this.send_adjust = function(player, adjust) {
         this.socket.emit('adjust', { player: player.name, adjust: { w: adjust.w, x: adjust.x, y: adjust.y, z: adjust.z }});
+    }.bind(vue);
+
+    this.clear_interrupts = function(player) {
+        this.socket.emit('clear_interrupts', { player: player.name });
     }.bind(vue);
 }

@@ -16,25 +16,27 @@
         <v-toolbar app>
           <v-toolbar-title>Game Master Console // Settings</v-toolbar-title>
         </v-toolbar>
-        <v-navigation-drawer app permanent>
-            <transition-group name="players" tag="div" v-on:after-enter="playerIn">
-            <v-card hover class="ml-2 mr-2 mt-2" :data-player="player.name.toLowerCase()"
-                    v-for="player in players" v-bind:key="player.name.toLowerCase()">
-                <v-toolbar>
-                  <v-toolbar-title>Player {{player.name}}</v-toolbar-title>
-                  <v-spacer></v-spacer>
-                  <v-btn icon @click="calculate_adjust(player)"><v-icon>accessibility</v-icon></v-btn>
-                </v-toolbar>
-                <v-card-actions>
-                    <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>
-                    <v-progress-linear buffer v-model="player.mic.value" :buffer-value="config.mic_threshold / 10"></v-progress-linear>
-                </v-card-actions>
-                <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
-             </v-card>
-             </transition-group>
-        </v-navigation-drawer>
         <v-content>
           <v-container fluid>
+              <transition-group name="players" tag="div" v-on:after-enter="playerIn">
+              <v-card hover class="ml-2 mr-2 mt-2" :data-player="player.name.toLowerCase()"
+                      v-for="player in players" v-bind:key="player.name.toLowerCase()" width="400px">
+                  <v-toolbar>
+                    <v-toolbar-title>Player {{player.name}}</v-toolbar-title>
+                  </v-toolbar>
+                  <v-card-actions>
+                      <v-icon :color="player.mic.interrupt ? 'red' : 'grey'">volume_up</v-icon>
+                      <v-progress-linear buffer v-model="player.mic.value" :buffer-value="config.mic_threshold / 10"></v-progress-linear>
+                      <v-checkbox disabled color="red" class="mt-4"
+                                  v-for="interrupt in player.interrupts" v-model="interrupt.done"></v-checkbox>
+                  </v-card-actions>
+                  <canvas :ref="'scene-'+player.name.toLowerCase()" @wheel="zoomPlayer($event, player)"></canvas>
+                  <v-card-actions>
+                      <v-btn @click="clear_interrupts(player)"><v-icon>volume_off</v-icon> Clear micrphone events</v-btn>
+                      <v-btn @click="calculate_adjust(player)"><v-icon>accessibility</v-icon> Align model</v-btn>
+                  </v-card-actions>
+               </v-card>
+               </transition-group>
           </v-container>
         </v-content>
         <v-footer></v-footer>
@@ -88,6 +90,7 @@
               var adjust = current.conjugate();
               comms.send_adjust(player, adjust);
           },
+          clear_interrupts: function(player) { comms.clear_interrupts(player); }
       }
   });
   </script>
