@@ -84,7 +84,7 @@
               });
               this.tileLayer.addTo(this.map);
               this.map.on('load', comms.connect);
-              this.map.setView([41.380772, 2.16809], 12);
+              this.map.setView([41.389942, 2.175223], 17);
           },
           init3D: function(playerKey) {
               // for some reason the reference is returned as an 1-element array
@@ -103,7 +103,7 @@
           },
           panOn: function(player) {
               if (player.location.lat != 0 && player.location.lon != 0) {
-                  this.map.setZoom(21);
+                  this.map.setZoom(18);
                   this.map.panTo([player.location.lat, player.location.lon]);
               }
           }
