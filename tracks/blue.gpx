@@ -198,5 +198,9 @@
         <ele>29.187</ele>
         <time>2018-03-15T11:48:44Z</time>
       </trkpt>
+      <trkpt lat="41.389914" lon="2.175046">
+        <ele>34.368</ele>
+        <time>2018-03-15T11:19:24Z</time>
+      </trkpt>
     </trkseg>
   </trk></gpx>

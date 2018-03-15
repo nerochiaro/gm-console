@@ -18,10 +18,10 @@
     <cmt></cmt>
     <desc></desc>
     <trkseg>
-      <trkpt lat="41.389984" lon="2.175064">
-        <ele>34.718</ele>
-        <time>2018-03-15T11:19:40Z</time>
-      </trkpt>
+        <trkpt lat="41.389915" lon="2.175046">
+          <ele>34.368</ele>
+          <time>2018-03-15T11:19:24Z</time>
+        </trkpt>
       <trkpt lat="41.389752" lon="2.174488">
         <ele>37.098</ele>
         <time>2018-03-15T11:20:20Z</time>
@@ -249,6 +249,10 @@
       <trkpt lat="41.390051" lon="2.175325">
         <ele>31.976</ele>
         <time>2018-03-15T11:57:40Z</time>
+      </trkpt>
+      <trkpt lat="41.389914" lon="2.175046">
+        <ele>34.368</ele>
+        <time>2018-03-15T11:19:24Z</time>
       </trkpt>
     </trkseg>
   </trk></gpx>
