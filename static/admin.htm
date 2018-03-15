@@ -68,7 +68,7 @@
 
           this.socket = io();
           comms = new Comms(this);
-          comms.connect();
+          comms.connect({no_map: true});
         },
       methods: {
           init3D: function(playerKey) {
