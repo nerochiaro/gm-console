@@ -81,17 +81,18 @@ ioserver.on('connect', function(socket) {
             else if (p.interrupts[1].done == false) p.interrupts[1].done = true;
         }
         d.done = p.interrupts;
-        ioserver.emit('mic', d)
+        ioserver.to('clients').emit('mic', d)
     })
     socket.on('orient', function(d) {
-        ioserver.emit('orientation', d)
+        ioserver.to('clients').emit('orientation', d)
+    })
     })
     socket.on('adjust', function(d) {
         var p = getPlayer(d.player);
         if (!p) return;
 
         p.adjust = d.adjust;
-        ioserver.emit('adjust', {player: d.player, adjust: p.adjust})
+        ioserver.to('clients').emit('adjust', {player: d.player, adjust: p.adjust})
     })
     socket.on('clear_interrupts', function(d) {
         var p = getPlayer(d.player);
@@ -99,6 +100,6 @@ ioserver.on('connect', function(socket) {
 
         p.interrupts[0].done = false;
         p.interrupts[1].done = false;
-        ioserver.emit('mic', {player: d.player, done: p.interrupts});
+        ioserver.to('clients').emit('mic', {player: d.player, done: p.interrupts});
     })
 })
